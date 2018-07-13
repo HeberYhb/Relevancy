@@ -73,3 +73,5 @@ def kmeans(test_arr,k):
     y = clusterer.fit_predict(test_arr)
     print(y)
     return y
+
+def 
