@@ -7,9 +7,12 @@ import jieba
 from nltk.tokenize import WordPunctTokenizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from sklearn.cluster import Birch
+from sklearn.metrics import silhouette_samples, silhouette_score
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 #from gensim.models import Word2Vec
 
 #取语料库
@@ -68,10 +71,28 @@ def DimenReduPCA(test_arr,dimension):
     return X
 
 #kmeans聚类
-def kmeans(test_arr,k):
-    clusterer = KMeans(n_clusters=k, init='k-means++')
+def kmeans(test_arr):
+    clusterer = KMeans(init='k-means++')
     y = clusterer.fit_predict(test_arr)
     print(y)
     return y
 
-def 
+#birch聚类
+def birch(test_arr):
+    clusterer = Birch()  #可能需要调threshold参数
+    y = clusterer.fit_predict(test_arr)
+    print(y)
+    return y
+
+
+def Silhouette(test_arr, y):
+    silhouette_avg = silhouette_score(test_arr, y)  # 平均轮廓系数
+    sample_silhouette_values = silhouette_samples(test_arr, y)  # 每个点的轮廓系数
+    print(silhouette_avg)
+    return silhouette_avg, sample_silhouette_values
+
+#绘图
+def Draw(silhouette_avg, sample_silhouette_values, y):
+    # 创建一个 subplot with 1-row 2-column
+    fig, ax1 = plt.subplots(1)
+    fig.set_size_inches(18, 7)
