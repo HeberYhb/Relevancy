@@ -96,7 +96,7 @@ if __name__ == '__main__':
             testDt = line.split(',')
             testDt_List.append(testDt[12])
             # print(testDt_List)
-    k = 5
+    k = 5     #聚类簇数
     dimension=66
     test_arr=toTfidfVec(testDt_List)
     #print(len(test_arr[0]))
