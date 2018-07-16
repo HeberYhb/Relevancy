@@ -11,18 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.cluster import Birch
 from sklearn.metrics import silhouette_samples, silhouette_score
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 #from gensim.models import Word2Vec
-
-#取语料库
-testDt_List=[]
-with open('./data/LogAlarm_testData.csv',encoding='utf-8') as file:
-    next(file)
-    for line in file:
-        testDt=line.split(',')
-        testDt_List.append(testDt[12])
-#print(testDt_List)
 
 #结巴中文分词
 def JieBaSplit(testDt_List):
@@ -71,16 +60,22 @@ def DimenReduPCA(test_arr,dimension):
     return X
 
 #kmeans聚类
-def kmeans(test_arr):
-    clusterer = KMeans(init='k-means++')
-    y = clusterer.fit_predict(test_arr)
+def kmeans(test_arr,k,testDt_List):
+    cluster = KMeans(n_clusters=k,init='k-means++')
+    y = cluster.fit_predict(test_arr)
     print(y)
-    return y
+    #print("中心点；",cluster.cluster_centers_)
+    label=[]        #每个样本所属的类
+    for i in range(1,len(cluster.labels_)):
+        label.append((testDt_List[i-1],cluster.labels_[i-1]))
+        #print(i,cluster.labels_[i-1])
+    print(cluster.inertia_)
+    return label
 
 #birch聚类
 def birch(test_arr):
-    clusterer = Birch()  #可能需要调threshold参数
-    y = clusterer.fit_predict(test_arr)
+    cluster = Birch()  #可能需要调threshold参数
+    y = cluster.fit_predict(test_arr)
     print(y)
     return y
 
@@ -91,8 +86,22 @@ def Silhouette(test_arr, y):
     print(silhouette_avg)
     return silhouette_avg, sample_silhouette_values
 
-#绘图
-def Draw(silhouette_avg, sample_silhouette_values, y):
-    # 创建一个 subplot with 1-row 2-column
-    fig, ax1 = plt.subplots(1)
-    fig.set_size_inches(18, 7)
+
+if __name__ == '__main__':
+    # 取语料库
+    testDt_List = []
+    with open('./data/LogAlarm_testData.csv', encoding='utf-8') as file:
+        next(file)
+        for line in file:
+            testDt = line.split(',')
+            testDt_List.append(testDt[12])
+            # print(testDt_List)
+    k = 5
+    dimension=66
+    test_arr=toTfidfVec(testDt_List)
+    #print(len(test_arr[0]))
+    test_arr_lowD= DimenReduPCA(test_arr,dimension)
+    label=kmeans(test_arr_lowD,k,testDt_List)
+    #for i in range(0,len(label)):
+    result=pd.DataFrame(label)
+    result.to_csv('./data/LogAlarm_kmeans_Result.csv',index=False,header=None)
