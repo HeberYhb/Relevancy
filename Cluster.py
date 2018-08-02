@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import jieba
 from nltk.tokenize import WordPunctTokenizer
+from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import PCA
@@ -63,15 +64,13 @@ def DimenReduPCA(test_arr,dimension):
 
 #kmeans聚类  基于划分
 def kmeans(test_arr,k,testDt_List):
-    cluster = KMeans(n_clusters=k,init='k-means++')
-    y = cluster.fit_predict(test_arr)
-    print(y)
-    #print("中心点；",cluster.cluster_centers_)
-    label=[]        #每个样本所属的类
-    for i in range(1,len(cluster.labels_)):
-        label.append((testDt_List[i-1],cluster.labels_[i-1]))
-        #print(i,cluster.labels_[i-1])
-    print(cluster.inertia_)
+    km = joblib.load('doc_cluster.pkl')
+    y2 = km.fit_predict(test_arr)
+    label = []  # 每个样本所属的类
+    for i in range(1, len(y2)):
+        label.append((testDt_List[i - 1], y2[i - 1]))
+        # print(i,cluster.labels_[i-1])
+    print(km.inertia_)
     '''
     X=np.array(test_arr)
     markers = ['^', 'x', 'o', '*', '+']
@@ -101,8 +100,8 @@ def DBScan(test_arr,r,minPoint,testDt_List):
     y=cls.fit_predict(test_arr)
     print(y)
     label = []  # 每个样本所属的类
-    for i in range(1, len(cls.labels_)):
-        label.append((testDt_List[i - 1], cls.labels_[i - 1]))
+    for i in range(0, len(cls.labels_)):
+        label.append((testDt_List[i], cls.labels_[i]))
     return label
 
 def Silhouette(test_arr, y):
@@ -115,7 +114,7 @@ def Silhouette(test_arr, y):
 if __name__ == '__main__':
     # 取语料库
     testDt_List = []
-    with open('./data/LogAlarm_testData.csv', encoding='utf-8') as file:
+    with open('./data/LogAlarm_testDt2.csv', encoding='utf-8') as file:
         next(file)
         for line in file:
             testDt = line.split(',')
@@ -139,4 +138,4 @@ if __name__ == '__main__':
     #label=DBScan(test_arr_lowD,r,minPoint,testDt_List)
 
     result=pd.DataFrame(label)
-    result.to_csv('./data/LogAlarm_DBSCAN_Result.csv',index=False,header=None)
+    result.to_csv('./data/LogAlarm_kmeans2_Result.csv',index=False,header=None)
