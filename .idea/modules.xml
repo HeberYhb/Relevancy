@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Relevancy.iml" filepath="$PROJECT_DIR$/.idea/Relevancy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/AnalysisOfAlarmLog.iml" filepath="$PROJECT_DIR$/.idea/AnalysisOfAlarmLog.iml" />
+      <module fileurl="file://D:\AIOPS\AnalysisOfAlarmLog\.idea\Relevancy.iml" filepath="D:\AIOPS\AnalysisOfAlarmLog\.idea\Relevancy.iml" />
     </modules>
   </component>
 </project>

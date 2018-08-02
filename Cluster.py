@@ -10,7 +10,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.cluster import Birch
+from sklearn.cluster import DBSCAN
 from sklearn.metrics import silhouette_samples, silhouette_score
+import matplotlib.pyplot as plt
 #from gensim.models import Word2Vec
 
 #结巴中文分词
@@ -59,7 +61,7 @@ def DimenReduPCA(test_arr,dimension):
     X = pca.fit_transform(test_arr)
     return X
 
-#kmeans聚类
+#kmeans聚类  基于划分
 def kmeans(test_arr,k,testDt_List):
     cluster = KMeans(n_clusters=k,init='k-means++')
     y = cluster.fit_predict(test_arr)
@@ -70,15 +72,38 @@ def kmeans(test_arr,k,testDt_List):
         label.append((testDt_List[i-1],cluster.labels_[i-1]))
         #print(i,cluster.labels_[i-1])
     print(cluster.inertia_)
+    '''
+    X=np.array(test_arr)
+    markers = ['^', 'x', 'o', '*', '+']
+    colors=['b','r','y','g','c']
+    for i in range(k):
+        members = cluster.labels_ == i
+        plt.scatter(X[members, 0], X[members, 1], s=60, marker=markers[i], c=colors[i], alpha=0.5)
+    plt.title(' ')
+    plt.show()
+    '''
     return label
 
-#birch聚类
-def birch(test_arr):
-    cluster = Birch()  #可能需要调threshold参数
+#birch聚类 基于层次
+# （可利用其它的一些聚类算法比如K-Means对所有的CF元组进行聚类，得到一颗比较好的CF Tree.这一步的主要目的是消除由于样本读入顺序导致的不合理的树结构，以及一些由于节点CF个数限制导致的树结构分裂）
+def birch(test_arr,testDt_List,T,B):
+    cluster = Birch(n_clusters=None,threshold=T,branching_factor=B)  #可能需要调threshold参数
     y = cluster.fit_predict(test_arr)
     print(y)
-    return y
+    label = []  # 每个样本所属的类
+    for i in range(1, len(cluster.labels_)):
+        label.append((testDt_List[i - 1], cluster.labels_[i - 1]))
+    return label
 
+#DBSCAN聚类  基于密度
+def DBScan(test_arr,r,minPoint,testDt_List):
+    cls=DBSCAN(eps=r, min_samples=minPoint)
+    y=cls.fit_predict(test_arr)
+    print(y)
+    label = []  # 每个样本所属的类
+    for i in range(1, len(cls.labels_)):
+        label.append((testDt_List[i - 1], cls.labels_[i - 1]))
+    return label
 
 def Silhouette(test_arr, y):
     silhouette_avg = silhouette_score(test_arr, y)  # 平均轮廓系数
@@ -96,12 +121,22 @@ if __name__ == '__main__':
             testDt = line.split(',')
             testDt_List.append(testDt[12])
             # print(testDt_List)
-    k = 5     #聚类簇数
     dimension=66
     test_arr=toTfidfVec(testDt_List)
     #print(len(test_arr[0]))
     test_arr_lowD= DimenReduPCA(test_arr,dimension)
+
+
+    k = 30  # 聚类簇数
     label=kmeans(test_arr_lowD,k,testDt_List)
-    #for i in range(0,len(label)):
+
+    #B = 30  # birch聚类CF Tree里所有节点的最大CF数
+    #T = 0.65  # birch聚类算法中的threshold参数值
+    #label=birch(test_arr_lowD,testDt_List,T,B)
+
+    #r=0.7
+    #minPoint=3
+    #label=DBScan(test_arr_lowD,r,minPoint,testDt_List)
+
     result=pd.DataFrame(label)
-    result.to_csv('./data/LogAlarm_kmeans_Result.csv',index=False,header=None)
+    result.to_csv('./data/LogAlarm_DBSCAN_Result.csv',index=False,header=None)
