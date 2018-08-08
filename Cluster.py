@@ -64,7 +64,7 @@ def DimenReduPCA(test_arr,dimension):
 
 #kmeans聚类  基于划分
 def kmeans(test_arr,k,testDt_List):
-    km = joblib.load('doc_cluster.pkl')
+    km = KMeans(n_clusters=k, init='k-means++')
     y2 = km.fit_predict(test_arr)
     label = []  # 每个样本所属的类
     for i in range(1, len(y2)):
